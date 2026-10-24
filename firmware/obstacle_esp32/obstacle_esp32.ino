@@ -4,6 +4,8 @@
 //   S<speed>     speed from 0.00 to 1.00, e.g. "S0.30" = 30 %, "S0" = stop
 // Every SONAR_EVERY_MS it sends the two ultrasonic readings back:
 //   U<left cm>,<right cm>   e.g. "U123,85"; 999 = no echo (nothing within ~4 m)
+// GPS module (NEO-6M or similar, 9600 baud) on Serial2: its $..RMC and $..GGA sentences are
+// passed through unchanged, one per line; the app parses them.
 // The app decides when to stop (limit set in its GUI). As a backstop, the ESP32 itself
 // refuses to drive while either sensor reads under HARD_STOP_CM.
 // Safety: if no command arrives for WATCHDOG_MS (app closed or crashed, cable unplugged),
@@ -22,8 +24,11 @@ const int IN3 = 32;  // [10] IN3  - direction of motor B
 const int IN4 = 33;  // [15] IN4  - direction of motor B
 const int STATUS_LED = 2;  // on-board LED: lit while the app is sending commands
 // HC-SR04 ultrasonic sensors (VCC 5 V). ECHO outputs 5 V: put a divider (1k + 2k) before the ESP32 pin.
-const int TRIG_L = 18, ECHO_L = 19;
-const int TRIG_R = 23, ECHO_R = 34;
+const int TRIG_L = 5, ECHO_L = 18;
+const int TRIG_R = 19, ECHO_R = 21;
+// GPS: module TX -> RX2 (GPIO16), module RX -> TX2 (GPIO17). VCC 3.3 V or 5 V per your module.
+const int GPS_RX = 16, GPS_TX = 17;
+const long GPS_BAUD = 9600;
 
 // ---- Tuning ----
 const int PWM_FREQ = 1000;               // Hz
@@ -50,6 +55,7 @@ float currentSpeed = 0;
 unsigned long lastSonarMs = 0;
 bool tooClose = false;
 String line;
+String gpsLine;
 
 float readCm(int trig, int echo) {
   digitalWrite(trig, LOW);
@@ -96,6 +102,7 @@ void handleLine(const String &cmd) {
 
 void setup() {
   Serial.begin(115200);
+  Serial2.begin(GPS_BAUD, SERIAL_8N1, GPS_RX, GPS_TX);
   for (int pin : {IN1, IN2, IN3, IN4, STATUS_LED, TRIG_L, TRIG_R}) {
     pinMode(pin, OUTPUT);
     digitalWrite(pin, LOW);
@@ -117,6 +124,19 @@ void loop() {
       line = "";
     } else if (line.length() < 32) {
       line += c;
+    }
+  }
+
+  while (Serial2.available()) {
+    char c = Serial2.read();
+    if (c == '\n') {
+      gpsLine.trim();
+      if (gpsLine.startsWith("$") && (gpsLine.indexOf("RMC,") == 3 || gpsLine.indexOf("GGA,") == 3)) {
+        Serial.println(gpsLine);
+      }
+      gpsLine = "";
+    } else if (gpsLine.length() < 100) {
+      gpsLine += c;
     }
   }
 

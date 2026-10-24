@@ -71,9 +71,15 @@ cable, and the ESP32 drives two DC motors through an **L293D**.
 
 | ESP32 pin | HC-SR04 | Purpose |
 |---|---|---|
-| GPIO18 / GPIO19 | left TRIG / ECHO | Left ultrasonic sensor |
-| GPIO23 / GPIO34 | right TRIG / ECHO | Right ultrasonic sensor |
+| GPIO5 / GPIO18 | left TRIG / ECHO | Left ultrasonic sensor (1) |
+| GPIO19 / GPIO21 | right TRIG / ECHO | Right ultrasonic sensor (2) |
 | 5V / GND | VCC / GND | Sensor power |
+
+| ESP32 pin | GPS module (NEO-6M etc.) | Purpose |
+|---|---|---|
+| GPIO16 (RX2) | TX | GPS data in, 9600 baud |
+| GPIO17 (TX2) | RX | optional |
+| 3V3 or 5V / GND | VCC / GND | per your module |
 
 The HC-SR04 ECHO pin outputs 5 V: put a divider (1 kΩ from ECHO, 2 kΩ to GND) in front of the
 ESP32 pin. (`docs/wiring.svg` shows the motor side only.)
@@ -90,7 +96,8 @@ ESP32 pin. (`docs/wiring.svg` shows the motor side only.)
    click **Connect**. You can also start it with `run.bat --port COM3`.
 
 **Protocol:** one line per message at 115200 baud. App to ESP32: `S<speed>`, speed `0.00` to `1.00`,
-repeated every 0.2 s. ESP32 to app: `U<left cm>,<right cm>` every 0.1 s (`999` = no echo). As a
+repeated every 0.2 s. ESP32 to app: `U<left cm>,<right cm>` every 0.1 s (`999` = no echo), plus the GPS's NMEA `$..RMC` / `$..GGA`
+sentences passed through unchanged (shown in the Sensors panel; GPS does not affect driving). As a
 backstop the ESP32 refuses to drive while either sensor reads under `HARD_STOP_CM` (15 cm),
 whatever the app says. If nothing arrives for 0.5 s (app closed or crashed, cable
 pulled out), the ESP32 brakes the motors. If the ESP32 disconnects, the app shows **STOPPED**.

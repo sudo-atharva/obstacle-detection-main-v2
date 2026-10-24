@@ -1,5 +1,6 @@
 """USB serial link to the ESP32. Sends one text command per line and reads back the
-ultrasonic readings the firmware sends as "U<left cm>,<right cm>".
+ultrasonic readings the firmware sends as "U<left cm>,<right cm>", plus the GPS module's
+NMEA RMC/GGA sentences, which the firmware passes through unchanged.
 
 Requires: pip install pyserial
 """
@@ -27,6 +28,39 @@ def parse_sonar(line: bytes):
     return None
 
 
+def _degrees(value: str, hemisphere: str) -> float:
+    """NMEA ddmm.mmmm -> decimal degrees, negative for S/W."""
+    raw = float(value)
+    degrees = int(raw // 100) + (raw % 100) / 60
+    return -degrees if hemisphere in ("S", "W") else degrees
+
+
+def parse_nmea(line: bytes):
+    """b"$GNRMC,..." / b"$GPGGA,..." -> dict of the GPS fields it carries; anything else -> None.
+    Sentences with a bad checksum are dropped."""
+    try:
+        text = line.decode().strip()
+        if text[:1] != "$" or "*" not in text:
+            return None
+        body, checksum = text[1:].split("*", 1)
+        calc = 0
+        for ch in body:
+            calc ^= ord(ch)
+        if calc != int(checksum[:2], 16):
+            return None
+        f = body.split(",")
+        if f[0][2:] == "RMC":
+            if f[2] != "A":
+                return {"fix": False}
+            return {"fix": True, "lat": _degrees(f[3], f[4]), "lon": _degrees(f[5], f[6]),
+                    "speed_kmh": float(f[7] or 0) * 1.852}
+        if f[0][2:] == "GGA":
+            return {"sats": int(f[7] or 0)}
+    except (UnicodeDecodeError, ValueError, IndexError):
+        pass
+    return None
+
+
 class Esp32Link:
     def __init__(self):
         self.conn = None
@@ -34,6 +68,8 @@ class Esp32Link:
         self.error = ""
         self.sonar = None       # latest (left_cm, right_cm)
         self.sonar_time = None  # time.monotonic() of that reading
+        self.gps = {}           # latest fix, lat, lon, speed_kmh, sats (whatever has arrived)
+        self.gps_time = None    # time.monotonic() of the last GPS sentence
         self._buf = b""
 
     @property
@@ -51,6 +87,7 @@ class Esp32Link:
         self.conn = conn
         self.error = ""
         self.sonar = self.sonar_time = None
+        self.gps, self.gps_time = {}, None
         self._buf = b""
 
     def poll(self):
@@ -70,6 +107,10 @@ class Esp32Link:
             reading = parse_sonar(line)
             if reading:
                 self.sonar, self.sonar_time = reading, time.monotonic()
+            gps = parse_nmea(line)
+            if gps:
+                self.gps.update(gps)
+                self.gps_time = time.monotonic()
 
     def send(self, line: str) -> bool:
         """Send one command. On failure (cable unplugged) the link closes itself."""

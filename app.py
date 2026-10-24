@@ -7,6 +7,7 @@ Keys: Enter = start, Space = stop
 import argparse
 import csv
 import os
+import subprocess
 import threading
 import time
 import tkinter as tk
@@ -25,7 +26,9 @@ from vehicle import Esp32Vehicle
 VIDEO_W, VIDEO_H = 760, 570
 CAMERA_LOST_AFTER = 1.0  # seconds without a frame before stopping for safety
 SONAR_LOST_AFTER = 0.5   # seconds without an ultrasonic reading before stopping
+GPS_LOST_AFTER = 3.0     # seconds without a GPS sentence before showing "no data"
 MAX_CAMERA_INDEX = 5     # camera indexes tried when no --source is given
+LAPTOP_LOCATION_EVERY = 30  # seconds between Windows location lookups (used until the GPS has a fix)
 CSV_EVERY = 1.0          # seconds between rows written to the detection CSV
 CSV_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "detections")
 
@@ -54,6 +57,48 @@ def open_camera(source):
             return cap, s
         cap.release()
     return None, None
+
+
+# Windows location service (Wi-Fi / IP based). Needs Settings > Privacy > Location turned on.
+LAPTOP_LOCATION_PS = """
+Add-Type -AssemblyName System.Device
+$w = New-Object System.Device.Location.GeoCoordinateWatcher
+[void]$w.TryStart($false, [TimeSpan]::FromSeconds(10))
+$end = (Get-Date).AddSeconds(15)
+while ($w.Position.Location.IsUnknown -and $w.Permission -ne 'Denied' -and (Get-Date) -lt $end) {
+    Start-Sleep -Milliseconds 200
+}
+$c = $w.Position.Location
+if ($c.IsUnknown) { "none $($w.Permission)" } else {
+    [string]::Format([Globalization.CultureInfo]::InvariantCulture, '{0},{1},{2}',
+                     $c.Latitude, $c.Longitude, $c.HorizontalAccuracy)
+}
+$w.Stop()
+"""
+
+
+class LaptopLocation(threading.Thread):
+    """Asks Windows where the laptop is every LAPTOP_LOCATION_EVERY seconds."""
+
+    def __init__(self):
+        super().__init__(daemon=True)
+        self.location = None  # (lat, lon, accuracy m)
+        self.status = "looking up…"
+
+    def run(self):
+        if os.name != "nt":
+            self.status = "Windows only"
+            return
+        while True:
+            try:
+                out = subprocess.run(["powershell", "-NoProfile", "-Command", LAPTOP_LOCATION_PS],
+                                     capture_output=True, text=True, timeout=40,
+                                     creationflags=subprocess.CREATE_NO_WINDOW).stdout.strip()
+                lat, lon, accuracy = map(float, out.split(","))
+                self.location, self.status = (lat, lon, accuracy), ""
+            except (OSError, subprocess.TimeoutExpired, ValueError):
+                self.status = "not available (turn on Windows location)"
+            time.sleep(LAPTOP_LOCATION_EVERY)
 
 
 class CameraWorker(threading.Thread):
@@ -130,6 +175,8 @@ class ObstacleApp:
         self.save_csv = tk.BooleanVar(value=True)
 
         self._build_ui(port, source)
+        self.laptop_location = LaptopLocation()
+        self.laptop_location.start()
         self.worker = None
         if not sim:
             self.worker = CameraWorker(source, ObstacleDetector(backend, focal=focal), config)
@@ -181,6 +228,8 @@ class ObstacleApp:
         self.nearest_label.pack(anchor="w")
         self.sonar_label = ttk.Label(readings, text="")
         self.sonar_label.pack(anchor="w")
+        self.gps_label = ttk.Label(readings, text="")
+        self.gps_label.pack(anchor="w")
         if not self.sim:
             row = ttk.Frame(readings)
             row.pack(fill="x", pady=(0, 4))
@@ -272,6 +321,21 @@ class ObstacleApp:
             left, right = self.esp32.sonar
             sonar_cm = min(left, right)
             self.sonar_label.config(text=f"Ultrasonic: left {left:.0f} cm   right {right:.0f} cm")
+
+        gps = self.esp32.gps
+        if not self.esp32.connected:
+            gps_text = "GPS: ESP32 not connected"
+        elif self.esp32.gps_time is None or now - self.esp32.gps_time > GPS_LOST_AFTER:
+            gps_text = "GPS: no data"
+        elif not gps.get("fix"):
+            gps_text = f"GPS: no fix yet ({gps.get('sats', 0)} satellites)"
+        else:
+            gps_text = (f"GPS: {gps['lat']:.6f}, {gps['lon']:.6f}   "
+                        f"{gps['speed_kmh']:.1f} km/h   {gps.get('sats', '?')} sats")
+        laptop = self.laptop_location.location
+        if laptop and not (self.esp32.connected and gps.get("fix")):
+            gps_text = f"GPS: {laptop[0]:.6f}, {laptop[1]:.6f}"  # laptop location until the GPS has a fix
+        self.gps_label.config(text=gps_text)
 
         speed = self.controller.update(camera_m, sonar_cm, fault)
         self.vehicle.set_speed(speed)

@@ -7,7 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from controller import Config, ObstacleController, State
 from detector import ObstacleDetector
-from esp32_link import parse_sonar
+from esp32_link import parse_nmea, parse_sonar
 
 
 class FakeClock:
@@ -100,6 +100,18 @@ def test_parse_sonar():
     assert parse_sonar(b"U123,85\r") == (123.0, 85.0)
     assert parse_sonar(b"speed 0.30") is None
     assert parse_sonar(b"U12") is None
+
+
+def test_parse_nmea():
+    rmc = b"$GPRMC,123519,A,4807.038,N,01131.000,E,022.4,084.4,230394,003.1,W*6A\r"
+    gps = parse_nmea(rmc)
+    assert gps["fix"] and abs(gps["lat"] - 48.1173) < 1e-4 and abs(gps["lon"] - 11.5167) < 1e-4
+    assert abs(gps["speed_kmh"] - 41.48) < 0.01
+    gga = b"$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47"
+    assert parse_nmea(gga) == {"sats": 8}
+    assert parse_nmea(rmc.replace(b"4807", b"4808")) is None  # bad checksum
+    assert parse_nmea(b"$GPRMC,,V,,,,,,,,,,N*53") == {"fix": False}
+    assert parse_nmea(b"U123,85") is None
 
 
 def test_bigger_box_means_closer():
