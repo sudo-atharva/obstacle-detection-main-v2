@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="720" viewBox="0 0 900 720">
+  <rect width="900" height="720" fill="#ffffff"/>
+  <text x="20" y="32" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#222">Obstacle Detection: ESP32 + L293D wiring</text>
+  <text x="20" y="54" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13" fill="#555">Two DC motors (left/right wheel). Pin numbers are L293D chip pins; the notch marks the top (pins 1 and 16).</text>
+  <rect x="40" y="72" width="170" height="520" rx="10" fill="#1f3a5f" stroke="#0f2238" stroke-width="2"/>
+  <rect x="52" y="292.0" width="70" height="80" rx="4" fill="#c9ced6" stroke="#8a919c"/>
+  <text x="87" y="328.0" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="14" text-anchor="middle" fill="#1f3a5f" font-weight="700">ESP32</text>
+  <text x="87" y="346.0" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="9" text-anchor="middle" fill="#1f3a5f" font-weight="400">WROOM-32</text>
+  <text x="87" y="392.0" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#c9d6e8" font-weight="400">DevKit</text>
+  <rect x="107.0" y="586" width="36" height="18" rx="3" fill="#9aa3ad" stroke="#555"/>
+  <text x="125.0" y="622" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#555" font-weight="400">USB cable → PC (runs the app)</text>
+  <rect x="202" y="87" width="16" height="10" rx="2" fill="#d4af37"/>
+  <text x="196" y="96" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#ffffff" font-weight="600">GPIO33</text>
+  <rect x="202" y="112" width="16" height="10" rx="2" fill="#d4af37"/>
+  <text x="196" y="121" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#ffffff" font-weight="600">5V / VIN</text>
+  <rect x="202" y="157" width="16" height="10" rx="2" fill="#d4af37"/>
+  <text x="196" y="166" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#ffffff" font-weight="600">GPIO25</text>
+  <rect x="202" y="197" width="16" height="10" rx="2" fill="#d4af37"/>
+  <text x="196" y="206" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#ffffff" font-weight="600">GPIO26</text>
+  <rect x="202" y="397" width="16" height="10" rx="2" fill="#d4af37"/>
+  <text x="196" y="406" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#ffffff" font-weight="600">GPIO27</text>
+  <rect x="202" y="487" width="16" height="10" rx="2" fill="#d4af37"/>
+  <text x="196" y="496" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#ffffff" font-weight="600">GPIO14</text>
+  <rect x="202" y="517" width="16" height="10" rx="2" fill="#d4af37"/>
+  <text x="196" y="526" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#ffffff" font-weight="600">GPIO32</text>
+  <rect x="202" y="557" width="16" height="10" rx="2" fill="#d4af37"/>
+  <text x="196" y="566" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#ffffff" font-weight="600">GND</text>
+  <rect x="470" y="137" width="120" height="330" rx="6" fill="#2b2b2b"/>
+  <path d="M518.0,137 a12,12 0 0,0 24,0" fill="#ffffff"/>
+  <text x="530.0" y="312" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="15" text-anchor="middle" fill="#ffffff" font-weight="700">L293D</text>
+  <rect x="446" y="158" width="24" height="8" fill="#b8b8b8"/>
+  <text x="476" y="166" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" text-anchor="start" fill="#ffffff" font-weight="400">1 EN1</text>
+  <rect x="446" y="198" width="24" height="8" fill="#b8b8b8"/>
+  <text x="476" y="206" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" text-anchor="start" fill="#ffffff" font-weight="400">2 IN1</text>
+  <rect x="446" y="238" width="24" height="8" fill="#b8b8b8"/>
+  <text x="476" y="246" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" text-anchor="start" fill="#ffffff" font-weight="400">3 OUT1</text>
+  <rect x="446" y="278" width="24" height="8" fill="#b8b8b8"/>
+  <text x="476" y="286" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" text-anchor="start" fill="#ffffff" font-weight="400">4 GND</text>
+  <rect x="446" y="318" width="24" height="8" fill="#b8b8b8"/>
+  <text x="476" y="326" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" text-anchor="start" fill="#ffffff" font-weight="400">5 GND</text>
+  <rect x="446" y="358" width="24" height="8" fill="#b8b8b8"/>
+  <text x="476" y="366" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" text-anchor="start" fill="#ffffff" font-weight="400">6 OUT2</text>
+  <rect x="446" y="398" width="24" height="8" fill="#b8b8b8"/>
+  <text x="476" y="406" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" text-anchor="start" fill="#ffffff" font-weight="400">7 IN2</text>
+  <rect x="446" y="438" width="24" height="8" fill="#b8b8b8"/>
+  <text x="476" y="446" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" text-anchor="start" fill="#ffffff" font-weight="400">8 VCC2</text>
+  <rect x="590" y="158" width="24" height="8" fill="#b8b8b8"/>
+  <text x="584" y="166" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#ffffff" font-weight="400">VCC1 16</text>
+  <rect x="590" y="198" width="24" height="8" fill="#b8b8b8"/>
+  <text x="584" y="206" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#ffffff" font-weight="400">IN4 15</text>
+  <rect x="590" y="238" width="24" height="8" fill="#b8b8b8"/>
+  <text x="584" y="246" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#ffffff" font-weight="400">OUT4 14</text>
+  <rect x="590" y="278" width="24" height="8" fill="#b8b8b8"/>
+  <text x="584" y="286" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#ffffff" font-weight="400">GND 13</text>
+  <rect x="590" y="318" width="24" height="8" fill="#b8b8b8"/>
+  <text x="584" y="326" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#ffffff" font-weight="400">GND 12</text>
+  <rect x="590" y="358" width="24" height="8" fill="#b8b8b8"/>
+  <text x="584" y="366" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#ffffff" font-weight="400">OUT3 11</text>
+  <rect x="590" y="398" width="24" height="8" fill="#b8b8b8"/>
+  <text x="584" y="406" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#ffffff" font-weight="400">IN3 10</text>
+  <rect x="590" y="438" width="24" height="8" fill="#b8b8b8"/>
+  <text x="584" y="446" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="11" text-anchor="end" fill="#ffffff" font-weight="400">EN2 9</text>
+  <polyline points="218,162 446,162" fill="none" stroke="#e67e22" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="218" cy="162" r="4" fill="#e67e22"/>
+  <circle cx="446" cy="162" r="4" fill="#e67e22"/>
+  <polyline points="218,202 446,202" fill="none" stroke="#2e86de" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="218" cy="202" r="4" fill="#2e86de"/>
+  <circle cx="446" cy="202" r="4" fill="#2e86de"/>
+  <polyline points="218,402 446,402" fill="none" stroke="#2e86de" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="218" cy="402" r="4" fill="#2e86de"/>
+  <circle cx="446" cy="402" r="4" fill="#2e86de"/>
+  <polyline points="218,117 680,117 680,162 614,162" fill="none" stroke="#d63031" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="218" cy="117" r="4" fill="#d63031"/>
+  <circle cx="614" cy="162" r="4" fill="#d63031"/>
+  <polyline points="218,92 700,92 700,202 614,202" fill="none" stroke="#8e44ad" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="218" cy="92" r="4" fill="#8e44ad"/>
+  <circle cx="614" cy="202" r="4" fill="#8e44ad"/>
+  <polyline points="218,492 680,492 680,442 614,442" fill="none" stroke="#e67e22" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="218" cy="492" r="4" fill="#e67e22"/>
+  <circle cx="614" cy="442" r="4" fill="#e67e22"/>
+  <polyline points="218,522 700,522 700,402 614,402" fill="none" stroke="#8e44ad" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="218" cy="522" r="4" fill="#8e44ad"/>
+  <circle cx="614" cy="402" r="4" fill="#8e44ad"/>
+  <path d="M248,562 v14 M237,576 h22 M241,581 h14 M245,586 h6" stroke="#222" stroke-width="2.5" fill="none"/>
+  <text x="262" y="574" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="10" text-anchor="start" fill="#555" font-weight="400">GND</text>
+  <polyline points="218,562 248,562" fill="none" stroke="#222" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="218" cy="562" r="4" fill="#222"/>
+  <circle cx="248" cy="562" r="4" fill="#222"/>
+  <polyline points="446,242 330,242 330,274" fill="none" stroke="#1e9e57" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="446" cy="242" r="4" fill="#1e9e57"/>
+  <circle cx="330" cy="274" r="4" fill="#1e9e57"/>
+  <polyline points="446,362 330,362 330,330" fill="none" stroke="#1e9e57" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="446" cy="362" r="4" fill="#1e9e57"/>
+  <circle cx="330" cy="330" r="4" fill="#1e9e57"/>
+  <polyline points="614,242 790,242 790,274" fill="none" stroke="#1e9e57" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="614" cy="242" r="4" fill="#1e9e57"/>
+  <circle cx="790" cy="274" r="4" fill="#1e9e57"/>
+  <polyline points="614,362 790,362 790,330" fill="none" stroke="#1e9e57" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="614" cy="362" r="4" fill="#1e9e57"/>
+  <circle cx="790" cy="330" r="4" fill="#1e9e57"/>
+  <circle cx="330" cy="302" r="28" fill="#f4f7f4" stroke="#1e9e57" stroke-width="3"/>
+  <text x="330" y="308" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="18" text-anchor="middle" fill="#1e9e57" font-weight="700">M</text>
+  <text x="294" y="306" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" text-anchor="end" fill="#222" font-weight="600">Motor A</text>
+  <circle cx="790" cy="302" r="28" fill="#f4f7f4" stroke="#1e9e57" stroke-width="3"/>
+  <text x="790" y="308" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="18" text-anchor="middle" fill="#1e9e57" font-weight="700">M</text>
+  <text x="826" y="306" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#222" font-weight="600">Motor B</text>
+  <polyline points="446,282 415,282 415,322 446,322" fill="none" stroke="#222" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="446" cy="282" r="4" fill="#222"/>
+  <circle cx="446" cy="322" r="4" fill="#222"/>
+  <polyline points="415,302 395,302" fill="none" stroke="#222" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="415" cy="302" r="4" fill="#222"/>
+  <circle cx="395" cy="302" r="4" fill="#222"/>
+  <path d="M395,302 v14 M384,316 h22 M388,321 h14 M392,326 h6" stroke="#222" stroke-width="2.5" fill="none"/>
+  <polyline points="614,282 645,282 645,322 614,322" fill="none" stroke="#222" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="614" cy="282" r="4" fill="#222"/>
+  <circle cx="614" cy="322" r="4" fill="#222"/>
+  <polyline points="645,302 665,302" fill="none" stroke="#222" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="645" cy="302" r="4" fill="#222"/>
+  <circle cx="665" cy="302" r="4" fill="#222"/>
+  <path d="M665,302 v14 M654,316 h22 M658,321 h14 M662,326 h6" stroke="#222" stroke-width="2.5" fill="none"/>
+  <polyline points="446,442 395,442" fill="none" stroke="#8e1b1b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="446" cy="442" r="4" fill="#8e1b1b"/>
+  <circle cx="395" cy="442" r="4" fill="#8e1b1b"/>
+  <path d="M388,428 v28 M378,435 v14" stroke="#222" stroke-width="3"/>
+  <text x="396" y="432" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="13" text-anchor="start" fill="#8e1b1b" font-weight="700">+</text>
+  <polyline points="378,442 330,442" fill="none" stroke="#222" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  <circle cx="378" cy="442" r="4" fill="#222"/>
+  <circle cx="330" cy="442" r="4" fill="#222"/>
+  <path d="M330,442 v14 M319,456 h22 M323,461 h14 M327,466 h6" stroke="#222" stroke-width="2.5" fill="none"/>
+  <text x="370" y="478" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#8e1b1b" font-weight="600">Motor battery 6–12 V</text>
+  <text x="20" y="650" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#333" font-weight="400">• All grounds (⏚) must be connected together: ESP32 GND, L293D pins 4, 5, 12, 13 and battery −.</text>
+  <text x="20" y="666" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#333" font-weight="400">• Pin 16 (VCC1) = 5 V logic from the ESP32 5V/VIN pin. Pin 8 (VCC2) = motor battery, never the ESP32.</text>
+  <text x="20" y="682" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#333" font-weight="400">• A motor spinning the wrong way: swap its two wires, or set REVERSE_A / REVERSE_B in the firmware.</text>
+  <text x="20" y="698" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="12" text-anchor="start" fill="#333" font-weight="400">• L293D gets warm: max ~600 mA per motor. For bigger motors use an L298N or TB6612FNG (same pins).</text>
+</svg>

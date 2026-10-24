@@ -1,0 +1,5 @@
+opencv-python>=4.8,<5
+pillow>=10.0
+numpy>=1.24
+# ESP32 connection over USB
+pyserial>=3.5
