@@ -32,6 +32,11 @@ class Config:
     clear_time: float = 1.0        # s the cause must be gone before speeding up again (> 0)
     decel_rate: float = 0.8        # speed units per second when slowing
     accel_rate: float = 0.3        # speed units per second when speeding up
+    # Not used here; the app sends these to the ESP32 (C command).
+    hard_stop_cm: float = 15.0     # ESP32 buzzes and refuses to drive under this
+    min_duty: float = 120          # PWM 0..255 where the motors start turning
+    reverse_a: bool = False
+    reverse_b: bool = False
 
 
 class ObstacleController:

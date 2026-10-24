@@ -46,7 +46,14 @@ SETTINGS = [
     ("sonar_stop_cm", "Stop: ultrasonic under (cm)", 5, 400, 5, 1),
     ("slow_speed", "Slow speed limit (%)", 0, 100, 5, 100),
     ("cruise_speed", "Cruise speed (%)", 0, 100, 5, 100),
+    ("clear_time", "Resume after clear for (s)", 0.1, 10, 0.1, 1),
+    ("accel_rate", "Speed up rate (%/s)", 5, 200, 5, 100),
+    ("decel_rate", "Slow down rate (%/s)", 5, 500, 5, 100),
+    ("hard_stop_cm", "ESP32 buzzer + hard stop under (cm)", 0, 400, 1, 1),
+    ("min_duty", "ESP32 motor min PWM (0-255)", 0, 255, 5, 1),
 ]
+REVERSE_SETTINGS = [("reverse_a", "Reverse motor A"), ("reverse_b", "Reverse motor B")]
+ESP32_SETTINGS_EVERY = 1.0  # s; resent so an ESP32 that rebooted gets them back
 
 
 def open_camera(source):
@@ -170,6 +177,8 @@ class ObstacleApp:
         self.vehicle = Esp32Vehicle(self.esp32)  # only sends while an ESP32 is connected
         self.prev_state = None
         self.setting_vars = {f: tk.DoubleVar(value=getattr(config, f) * k) for f, *_, k in SETTINGS}
+        self.reverse_vars = {f: tk.BooleanVar(value=getattr(config, f)) for f, _ in REVERSE_SETTINGS}
+        self.esp32_sent = ("", 0.0)  # (last settings line sent to the ESP32, time)
         self.sim_obstacle = tk.BooleanVar(value=False)
         self.sim_distance = tk.DoubleVar(value=10.0)
         self.save_csv = tk.BooleanVar(value=True)
@@ -252,12 +261,16 @@ class ObstacleApp:
             ttk.Scale(row, from_=0.5, to=20, variable=self.sim_distance).pack(
                 side="left", fill="x", expand=True)
 
-        settings = ttk.LabelFrame(side, text=" Limits ", padding=6)
+        settings = ttk.LabelFrame(side, text=" Settings ", padding=6)
         settings.pack(fill="x", pady=8)
         for i, (field, label, lo, hi, step, _) in enumerate(SETTINGS):
             ttk.Label(settings, text=label).grid(row=i, column=0, sticky="w")
             ttk.Spinbox(settings, from_=lo, to=hi, increment=step, width=6,
                         textvariable=self.setting_vars[field]).grid(row=i, column=1, padx=(6, 0))
+        row = ttk.Frame(settings)
+        row.grid(row=len(SETTINGS), column=0, columnspan=2, sticky="w")
+        for field, label in REVERSE_SETTINGS:
+            ttk.Checkbutton(row, text=label, variable=self.reverse_vars[field]).pack(side="left", padx=(0, 10))
 
         self.esp32_panel = Esp32Panel(side, self.esp32, port)
         self.esp32_panel.pack(fill="x", pady=(0, 8))
@@ -277,11 +290,20 @@ class ObstacleApp:
 
     # ---- main loop (runs ~20 times per second) -------------------------
     def tick(self):
-        for field, *_, k in SETTINGS:
+        config = self.controller.config
+        for field, _, lo, hi, _, k in SETTINGS:
             try:
-                setattr(self.controller.config, field, float(self.setting_vars[field].get()) / k)
+                value = min(max(float(self.setting_vars[field].get()), lo), hi)  # typed values too
+                setattr(config, field, value / k)
             except (tk.TclError, ValueError):
                 pass  # half-typed value in a spinbox
+        for field, _ in REVERSE_SETTINGS:
+            setattr(config, field, self.reverse_vars[field].get())
+        esp32_line = (f"C{config.hard_stop_cm:.0f},{config.min_duty:.0f},"
+                      f"{int(config.reverse_a)},{int(config.reverse_b)}")
+        if esp32_line != self.esp32_sent[0] or time.monotonic() - self.esp32_sent[1] > ESP32_SETTINGS_EVERY:
+            if self.esp32.send(esp32_line):
+                self.esp32_sent = (esp32_line, time.monotonic())
 
         now = time.monotonic()
         fault = ""

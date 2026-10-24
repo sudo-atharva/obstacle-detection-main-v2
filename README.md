@@ -74,6 +74,7 @@ cable, and the ESP32 drives two DC motors through an **L293D**.
 | GPIO5 / GPIO18 | left TRIG / ECHO | Left ultrasonic sensor (1) |
 | GPIO19 / GPIO21 | right TRIG / ECHO | Right ultrasonic sensor (2) |
 | 5V / GND | VCC / GND | Sensor power |
+| GPIO23 / GND | active buzzer + / - | Beeps under the hard stop distance (15 cm default, set in GUI) |
 
 | ESP32 pin | GPS module (NEO-6M etc.) | Purpose |
 |---|---|---|
@@ -96,14 +97,16 @@ ESP32 pin. (`docs/wiring.svg` shows the motor side only.)
    click **Connect**. You can also start it with `run.bat --port COM3`.
 
 **Protocol:** one line per message at 115200 baud. App to ESP32: `S<speed>`, speed `0.00` to `1.00`,
-repeated every 0.2 s. ESP32 to app: `U<left cm>,<right cm>` every 0.1 s (`999` = no echo), plus the GPS's NMEA `$..RMC` / `$..GGA`
+repeated every 0.2 s, and `C<hard stop cm>,<min duty>,<reverse A 0/1>,<reverse B 0/1>` (GUI
+settings) every 1 s. ESP32 to app: `U<left cm>,<right cm>` every 0.1 s (`999` = no echo), plus the GPS's NMEA `$..RMC` / `$..GGA`
 sentences passed through unchanged (shown in the Sensors panel; GPS does not affect driving). As a
 backstop the ESP32 refuses to drive while either sensor reads under `HARD_STOP_CM` (15 cm),
 whatever the app says. If nothing arrives for 0.5 s (app closed or crashed, cable
 pulled out), the ESP32 brakes the motors. If the ESP32 disconnects, the app shows **STOPPED**.
 
-**Tuning** (top of the `.ino` file): if the motors hum but don't turn at low speed, raise `MIN_DUTY`.
-If a motor runs backwards, set `REVERSE_A` / `REVERSE_B` (or swap that motor's two wires).
+**Tuning** (Settings panel in the GUI): if the motors hum but don't turn at low speed, raise
+**ESP32 motor min PWM**. If a motor runs backwards, tick **Reverse motor A / B** (or swap that motor's
+two wires). **ESP32 buzzer + hard stop under** sets the buzzer / backstop distance.
 
 ## Files
 - `controller.py`: the speed logic (no GUI); tests are in `tests/`
