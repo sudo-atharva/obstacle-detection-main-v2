@@ -57,12 +57,12 @@ cable, and the ESP32 drives two DC motors through an **L293D**.
 
 | ESP32 pin | L293D pin | Purpose |
 |---|---|---|
-| GPIO25 | 1 (EN1) | Motor A speed (PWM) |
-| GPIO26 | 2 (IN1) | Motor A direction |
-| GPIO27 | 7 (IN2) | Motor A direction |
-| GPIO14 | 9 (EN2) | Motor B speed (PWM) |
-| GPIO32 | 10 (IN3) | Motor B direction |
-| GPIO33 | 15 (IN4) | Motor B direction |
+| GPIO32 | 1 (EN1) | Motor A speed (PWM) |
+| GPIO33 | 2 (IN1) | Motor A direction |
+| GPIO14 | 7 (IN2) | Motor A direction |
+| GPIO25 | 9 (EN2) | Motor B speed (PWM) |
+| GPIO27 | 10 (IN3) | Motor B direction |
+| GPIO26 | 15 (IN4) | Motor B direction |
 | 5V / VIN | 16 (VCC1) | L293D logic power |
 | GND | 4, 5, 12, 13 | Ground (also battery −) |
 | | 8 (VCC2) | **Motor battery +** (6–12 V) |

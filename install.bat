@@ -3,9 +3,10 @@ setlocal
 cd /d "%~dp0"
 title Obstacle Detection - Install
 
-rem Prefer the "py" launcher; fall back to "python" on PATH.
+rem Prefer a Python that numpy / opencv / PyTorch ship ready-made packages for (a brand-new
+rem Python makes pip try to compile numpy, which fails). Fall back to "python" on PATH.
 set "PY="
-where py >nul 2>nul && set "PY=py -3"
+for %%v in (3.12 3.11 3.13 3.10) do if not defined PY py -%%v -c "" >nul 2>nul && set "PY=py -%%v"
 if not defined PY where python >nul 2>nul && set "PY=python"
 if not defined PY (
     echo Python was not found.
@@ -22,7 +23,14 @@ if not exist venv (
 
 echo Installing packages...
 venv\Scripts\python.exe -m pip install --upgrade pip
-venv\Scripts\python.exe -m pip install -r requirements.txt || (echo Package install failed. & pause & exit /b 1)
+venv\Scripts\python.exe --version
+rem --only-binary: never compile; fail with a clear message instead.
+venv\Scripts\python.exe -m pip install --only-binary=:all: -r requirements.txt || (
+    echo Package install failed. Your Python is probably too new or 32-bit.
+    echo Install 64-bit Python 3.12 from https://www.python.org/downloads/ , delete the venv folder,
+    echo then run install.bat again.
+    pause & exit /b 1
+)
 
 echo.
 echo YOLO gives much better detection but is a large download (about 2 GB, includes PyTorch).

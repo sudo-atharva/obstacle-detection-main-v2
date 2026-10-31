@@ -18,12 +18,12 @@
 // Wiring: see ../../docs/wiring.svg
 
 // ---- Pins (L293D pin numbers in brackets) ----
-const int ENA = 25;  // [1]  EN1  - speed of motor A (PWM)
-const int IN1 = 26;  // [2]  IN1  - direction of motor A
-const int IN2 = 27;  // [7]  IN2  - direction of motor A
-const int ENB = 14;  // [9]  EN2  - speed of motor B (PWM)
-const int IN3 = 32;  // [10] IN3  - direction of motor B
-const int IN4 = 33;  // [15] IN4  - direction of motor B
+const int ENA = 32;  // [1]  EN1  - speed of motor A (PWM)
+const int IN1 = 33;  // [2]  IN1  - direction of motor A
+const int IN2 = 14;  // [7]  IN2  - direction of motor A
+const int ENB = 25;  // [9]  EN2  - speed of motor B (PWM)
+const int IN3 = 27;  // [10] IN3  - direction of motor B
+const int IN4 = 26;  // [15] IN4  - direction of motor B
 const int STATUS_LED = 2;  // on-board LED: lit while the app is sending commands
 // HC-SR04 ultrasonic sensors (VCC 5 V). ECHO outputs 5 V: put a divider (1k + 2k) before the ESP32 pin.
 const int TRIG_L = 5, ECHO_L = 18;

@@ -36,9 +36,10 @@ class ObstacleDetector:
             try:
                 from ultralytics import YOLO
                 self.model = YOLO("yolov8n.pt")
-            except ImportError:
+            except Exception as exc:  # not installed, PyTorch DLL error, weights download failed...
                 if backend == "yolo":
                     raise
+                print(f"YOLO unavailable, using the edges detector: {exc}")
         self.name = "YOLO" if self.model else "Edges"
 
     def path_zone(self, frame):
